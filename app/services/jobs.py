@@ -25,13 +25,15 @@ def _save_jobs(jobs: list[dict]):
     JOBS_FILE.write_text(json.dumps(jobs[-MAX_JOBS:], indent=2))
 
 
-def create_job(title: str, indexer: str, size: int, username: str) -> dict:
+def create_job(title: str, indexer: str, size: int, username: str,
+               type: str = "audiobook") -> dict:
     job = {
         "id": str(uuid.uuid4())[:8],
         "title": title,
         "indexer": indexer,
         "size": size,
         "username": username,
+        "type": type,
         "status": "downloading",
         "created_at": time.time(),
         "error": "",

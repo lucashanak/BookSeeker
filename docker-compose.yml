@@ -1,14 +1,15 @@
 version: "3.8"
 
 services:
-  audiobook-seeker:
+  book-seeker:
     build: .
-    container_name: audiobook-seeker
+    container_name: book-seeker
     ports:
       - "8091:8091"
     volumes:
       - ./data:/app/data
       - audiobooks:/audiobooks
+      - ebooks:/ebooks
     environment:
       - PROWLARR_URL=http://prowlarr:9696
       - PROWLARR_API_KEY=${PROWLARR_API_KEY}
@@ -16,6 +17,8 @@ services:
       - ABS_URL=http://audiobookshelf:80
       - ABS_USER=${ABS_USER:-admin}
       - ABS_PASS=${ABS_PASS:-admin}
+      - CALIBRE_URL=http://calibre-web:8083
+      - EBOOK_DIR=/ebooks
     networks:
       - default
 
@@ -31,7 +34,25 @@ services:
     networks:
       - default
 
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Prague
+    volumes:
+      - calibre-config:/config
+      - ebooks:/books
+    ports:
+      - "8083:8083"
+    restart: unless-stopped
+    networks:
+      - default
+
 volumes:
   audiobooks:
+  ebooks:
   abs-config:
   abs-metadata:
+  calibre-config:

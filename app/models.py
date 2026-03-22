@@ -13,6 +13,7 @@ class DownloadRequest(BaseModel):
     magnet_url: str = ""
     size: int = 0
     seeders: int = 0
+    type: str = "audiobook"  # "audiobook" or "ebook"
 
 
 class SettingsUpdate(BaseModel):
@@ -25,7 +26,10 @@ class SettingsUpdate(BaseModel):
     abs_user: str | None = None
     abs_pass: str | None = None
     qbit_save_path: str | None = None
+    qbit_ebook_save_path: str | None = None
     audiobook_dir: str | None = None
+    ebook_dir: str | None = None
+    calibre_url: str | None = None
 
 
 class CreateUserRequest(BaseModel):

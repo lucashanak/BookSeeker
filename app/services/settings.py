@@ -16,7 +16,10 @@ _defaults = {
     "abs_user": os.environ.get("ABS_USER", ""),
     "abs_pass": os.environ.get("ABS_PASS", ""),
     "qbit_save_path": os.environ.get("QBIT_SAVE_PATH", ""),
+    "qbit_ebook_save_path": os.environ.get("QBIT_EBOOK_SAVE_PATH", ""),
     "audiobook_dir": os.environ.get("AUDIOBOOK_DIR", "/audiobooks"),
+    "ebook_dir": os.environ.get("EBOOK_DIR", "/ebooks"),
+    "calibre_url": os.environ.get("CALIBRE_URL", "http://calibre-web:8083"),
 }
 
 _settings: dict = {}
@@ -91,7 +94,10 @@ def _apply():
     cfg.ABS_USER = _settings.get("abs_user", cfg.ABS_USER)
     cfg.ABS_PASS = _settings.get("abs_pass", cfg.ABS_PASS)
     cfg.QBIT_SAVE_PATH = _settings.get("qbit_save_path", cfg.QBIT_SAVE_PATH)
+    cfg.QBIT_EBOOK_SAVE_PATH = _settings.get("qbit_ebook_save_path", cfg.QBIT_EBOOK_SAVE_PATH)
     cfg.AUDIOBOOK_DIR = _settings.get("audiobook_dir", cfg.AUDIOBOOK_DIR)
+    cfg.EBOOK_DIR = _settings.get("ebook_dir", cfg.EBOOK_DIR)
+    cfg.CALIBRE_URL = _settings.get("calibre_url", cfg.CALIBRE_URL)
 
 
 _load()

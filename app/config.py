@@ -11,4 +11,7 @@ ABS_URL = os.environ.get("ABS_URL", "http://audiobookshelf:80")
 ABS_USER = os.environ.get("ABS_USER", "")
 ABS_PASS = os.environ.get("ABS_PASS", "")
 AUDIOBOOK_DIR = os.environ.get("AUDIOBOOK_DIR", "/audiobooks")
+EBOOK_DIR = os.environ.get("EBOOK_DIR", "/ebooks")
 QBIT_SAVE_PATH = os.environ.get("QBIT_SAVE_PATH", "")  # Path from qBittorrent's perspective
+QBIT_EBOOK_SAVE_PATH = os.environ.get("QBIT_EBOOK_SAVE_PATH", "")  # qBit perspective for ebooks
+CALIBRE_URL = os.environ.get("CALIBRE_URL", "http://calibre-web:8083")

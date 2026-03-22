@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AudiobookSeeker</title>
+  <title>BookSeeker</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 </head>
 <body>
 
 <nav>
-  <div class="logo">AudiobookSeeker</div>
+  <div class="logo">BookSeeker</div>
   <div class="nav-links" id="navLinks" style="display:none">
     <button data-page="search" class="active">Search</button>
     <button data-page="library">Library</button>
+    <button data-page="ebooks">Ebooks</button>
     <button data-page="downloads">Downloads</button>
+    <button data-page="player">Player</button>
+    <button data-page="reader">Reader</button>
     <button data-page="settings">Settings</button>
   </div>
 </nav>
@@ -24,7 +27,7 @@
   <div class="page active" id="pageLogin">
     <div class="login-wrap">
       <div class="login-box">
-        <h2>AudiobookSeeker</h2>
+        <h2>BookSeeker</h2>
         <input type="text" id="loginUser" placeholder="Username" autocomplete="username">
         <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
         <button id="loginBtn">Login</button>
@@ -35,6 +38,10 @@
 
   <!-- Search -->
   <div class="page" id="pageSearch">
+    <div class="type-toggle">
+      <button class="type-btn active" data-type="audiobook">Audiobooks</button>
+      <button class="type-btn" data-type="ebook">Ebooks</button>
+    </div>
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search audiobooks on torrent trackers...">
       <button id="searchBtn">Search</button>
@@ -52,10 +59,27 @@
     <div id="libraryContent"></div>
   </div>
 
+  <!-- Ebooks -->
+  <div class="page" id="pageEbooks">
+    <h1 class="page-title">Ebooks</h1>
+    <div id="ebookBreadcrumb" class="ebook-breadcrumb"></div>
+    <div id="ebookContent"></div>
+  </div>
+
   <!-- Downloads -->
   <div class="page" id="pageDownloads">
     <h1 class="page-title">Downloads</h1>
     <div id="downloadsContent"></div>
+  </div>
+
+  <!-- Player (Audiobookshelf) -->
+  <div class="page iframe-page" id="pagePlayer">
+    <iframe id="absFrame" src="about:blank" allow="autoplay"></iframe>
+  </div>
+
+  <!-- Reader (Calibre-Web) -->
+  <div class="page iframe-page" id="pageReader">
+    <iframe id="calibreFrame" src="about:blank"></iframe>
   </div>
 
   <!-- Settings -->
@@ -106,8 +130,12 @@
           <input type="password" id="setQbitPass" class="setting-input" placeholder="Password">
         </div>
         <div class="setting-group">
-          <label>Save Path (container perspective)</label>
+          <label>Audiobook Save Path (qBit perspective)</label>
           <input type="text" id="setQbitSavePath" class="setting-input" placeholder="/data/audiobooks">
+        </div>
+        <div class="setting-group">
+          <label>Ebook Save Path (qBit perspective)</label>
+          <input type="text" id="setQbitEbookSavePath" class="setting-input" placeholder="/data/ebooks">
         </div>
 
         <h3 class="subsection-title">Audiobookshelf</h3>
@@ -124,9 +152,20 @@
           <input type="password" id="setAbsPass" class="setting-input" placeholder="Password">
         </div>
 
+        <h3 class="subsection-title">Directories</h3>
         <div class="setting-group">
           <label>Audiobook Directory</label>
           <input type="text" id="setAudiobookDir" class="setting-input" placeholder="/audiobooks">
+        </div>
+        <div class="setting-group">
+          <label>Ebook Directory</label>
+          <input type="text" id="setEbookDir" class="setting-input" placeholder="/ebooks">
+        </div>
+
+        <h3 class="subsection-title">Calibre-Web</h3>
+        <div class="setting-group">
+          <label>URL</label>
+          <input type="text" id="setCalibreUrl" class="setting-input" placeholder="http://calibre-web:8083">
         </div>
 
         <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>

@@ -1,16 +1,21 @@
-"""Prowlarr API client — search torrent indexers for audiobooks."""
+"""Prowlarr API client — search torrent indexers."""
 import httpx
 
 from app.config import PROWLARR_URL, PROWLARR_API_KEY
 
+# Prowlarr categories
+CAT_AUDIO = "3000"
+CAT_BOOKS = "7000"
 
-async def search(query: str, limit: int = 30) -> list[dict]:
-    """Search Prowlarr for audiobooks (category 3000=Audio)."""
+
+async def search(query: str, category: str = CAT_AUDIO, limit: int = 30,
+                 min_size: int = 0) -> list[dict]:
+    """Search Prowlarr for torrents in given category."""
     if not PROWLARR_API_KEY:
         return []
     params = {
         "query": query,
-        "categories": "3000",
+        "categories": category,
         "type": "search",
         "apikey": PROWLARR_API_KEY,
     }
@@ -23,10 +28,9 @@ async def search(query: str, limit: int = 30) -> list[dict]:
         return []
 
     results = []
-    for item in raw[:limit]:
+    for item in raw[:limit * 2]:
         size = item.get("size", 0)
-        # Skip tiny results (< 50MB, likely not audiobooks)
-        if size < 50_000_000:
+        if min_size and size < min_size:
             continue
         cats = [c.get("id", 0) for c in item.get("categories", [])]
         results.append({
@@ -42,9 +46,8 @@ async def search(query: str, limit: int = 30) -> list[dict]:
             "age_days": item.get("age", 0),
             "grabs": item.get("grabs", 0),
         })
-    # Sort: more seeders first
     results.sort(key=lambda x: x["seeders"], reverse=True)
-    return results
+    return results[:limit]
 
 
 async def get_indexers() -> list[dict]:

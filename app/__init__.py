@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from app.config import APP_VERSION
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="AudiobookSeeker", version=APP_VERSION)
+    app = FastAPI(title="BookSeeker", version=APP_VERSION)
 
     from app.services import auth
     admin_user = os.environ.get("ADMIN_USER", "admin")
@@ -19,12 +19,16 @@ def create_app() -> FastAPI:
     from app.routers import downloads as downloads_router
     from app.routers import library as library_router
     from app.routers import settings as settings_router
+    from app.routers import ebooks as ebooks_router
+    from app.routers import proxy as proxy_router
 
     app.include_router(auth_router.router)
     app.include_router(search_router.router)
     app.include_router(downloads_router.router)
     app.include_router(library_router.router)
     app.include_router(settings_router.router)
+    app.include_router(ebooks_router.router)
+    app.include_router(proxy_router.router)
 
     @app.get("/api/version")
     async def version():

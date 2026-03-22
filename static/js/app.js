@@ -1,4 +1,4 @@
-// AudiobookSeeker — Main App Module
+// BookSeeker — Main App Module
 
 const state = {
   token: localStorage.getItem('abs_token') || '',
@@ -6,6 +6,8 @@ const state = {
   absLibraryId: '',
   isAdmin: false,
   username: '',
+  searchType: 'audiobook',
+  ebookPath: '',
 };
 
 // ── Helpers ──
@@ -103,6 +105,9 @@ function showPage(page) {
   $$('#navLinks button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   if (page === 'downloads') loadDownloads();
   if (page === 'library') loadLibrary();
+  if (page === 'ebooks') loadEbooks();
+  if (page === 'player') loadIframe('absFrame', '/audiobookshelf/');
+  if (page === 'reader') loadIframe('calibreFrame', '/calibre/');
   if (page === 'settings') loadSettings();
 }
 
@@ -113,7 +118,7 @@ async function doSearch() {
   const container = $('#searchResults');
   container.innerHTML = Array(4).fill('<div class="skeleton" style="height:100px;margin-bottom:12px"></div>').join('');
   try {
-    const data = await api(`/api/search?q=${encodeURIComponent(q)}`);
+    const data = await api(`/api/search?q=${encodeURIComponent(q)}&type=${state.searchType}`);
     if (!data.results.length) {
       container.innerHTML = '<div class="empty-state"><p>No results found</p></div>';
       return;
@@ -157,6 +162,7 @@ async function startDownload(result) {
         magnet_url: result.magnet_url,
         size: result.size,
         seeders: result.seeders,
+        type: state.searchType,
       },
     });
     showToast('Download started!');
@@ -260,6 +266,70 @@ function renderLibraryItems(items, container) {
   `).join('');
 }
 
+// ── Iframe loader (Player / Reader) ──
+function loadIframe(id, src) {
+  const frame = $(`#${id}`);
+  if (frame && frame.src !== location.origin + src) {
+    frame.src = src;
+  }
+}
+
+// ── Ebooks file browser ──
+async function loadEbooks(path) {
+  if (path !== undefined) state.ebookPath = path;
+  const container = $('#ebookContent');
+  const breadcrumb = $('#ebookBreadcrumb');
+
+  // Build breadcrumb
+  const parts = state.ebookPath ? state.ebookPath.split('/') : [];
+  let crumbs = '<a onclick="loadEbooks(\'\')">Ebooks</a>';
+  let cumPath = '';
+  for (const part of parts) {
+    cumPath += (cumPath ? '/' : '') + part;
+    const p = cumPath;
+    crumbs += `<span class="sep">/</span><a onclick="loadEbooks('${esc(p)}')">${esc(part)}</a>`;
+  }
+  breadcrumb.innerHTML = crumbs;
+
+  container.innerHTML = '<div class="skeleton" style="height:60px;margin-bottom:8px"></div>'.repeat(3);
+  try {
+    const data = await api(`/api/ebooks/files?path=${encodeURIComponent(state.ebookPath)}`);
+    const items = data.items || [];
+    if (!items.length) {
+      container.innerHTML = '<div class="empty-state"><p>No ebooks found. Download some ebooks first!</p></div>';
+      return;
+    }
+    container.innerHTML = items.map(item => {
+      if (item.is_dir) {
+        return `
+          <div class="ebook-item" onclick="loadEbooks('${esc(item.path)}')">
+            <span class="ebook-icon">📁</span>
+            <span class="ebook-name">${esc(item.name)}</span>
+            <span class="ebook-meta">
+              ${item.ebook_count ? `<span>${item.ebook_count} ebooks</span>` : ''}
+              ${item.size ? `<span>${fmtSize(item.size)}</span>` : ''}
+            </span>
+          </div>
+        `;
+      }
+      const extClass = ['epub','pdf','mobi','azw3'].includes(item.ext) ? item.ext : '';
+      return `
+        <div class="ebook-item">
+          <span class="ebook-icon">${item.is_ebook ? '📖' : '📄'}</span>
+          <span class="ebook-name">${esc(item.name)}</span>
+          ${item.ext ? `<span class="ebook-ext ${extClass}">${esc(item.ext)}</span>` : ''}
+          <span class="ebook-meta"><span>${fmtSize(item.size)}</span></span>
+          ${item.is_ebook ? `<a href="/api/ebooks/download/${encodeURIComponent(item.path)}" class="ebook-dl-btn" onclick="event.stopPropagation()">Download</a>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = `<div class="empty-state"><p>Failed: ${esc(e.message)}</p></div>`;
+  }
+}
+// Make loadEbooks accessible for onclick
+window.loadEbooks = loadEbooks;
+
 // ── Settings ──
 async function loadSettings() {
   // Show/hide admin sections
@@ -268,7 +338,7 @@ async function loadSettings() {
   // Load version
   try {
     const ver = await api('/api/version');
-    $('#appVersion').textContent = `AudiobookSeeker v${ver.version}`;
+    $('#appVersion').textContent = `BookSeeker v${ver.version}`;
   } catch {}
 
   if (state.isAdmin) {
@@ -289,11 +359,14 @@ async function loadServiceConfig() {
     $('#setQbitPass').value = s.qbit_pass === true ? '' : (s.qbit_pass || '');
     $('#setQbitPass').placeholder = s.qbit_pass === true ? '(configured)' : 'Password';
     $('#setQbitSavePath').value = s.qbit_save_path || '';
+    $('#setQbitEbookSavePath').value = s.qbit_ebook_save_path || '';
     $('#setAbsUrl').value = s.abs_url || '';
     $('#setAbsUser').value = s.abs_user || '';
     $('#setAbsPass').value = s.abs_pass === true ? '' : (s.abs_pass || '');
     $('#setAbsPass').placeholder = s.abs_pass === true ? '(configured)' : 'Password';
     $('#setAudiobookDir').value = s.audiobook_dir || '';
+    $('#setEbookDir').value = s.ebook_dir || '';
+    $('#setCalibreUrl').value = s.calibre_url || '';
   } catch {}
 }
 
@@ -306,10 +379,13 @@ async function saveSettings() {
     ['qbit_user', 'setQbitUser'],
     ['qbit_pass', 'setQbitPass'],
     ['qbit_save_path', 'setQbitSavePath'],
+    ['qbit_ebook_save_path', 'setQbitEbookSavePath'],
     ['abs_url', 'setAbsUrl'],
     ['abs_user', 'setAbsUser'],
     ['abs_pass', 'setAbsPass'],
     ['audiobook_dir', 'setAudiobookDir'],
+    ['ebook_dir', 'setEbookDir'],
+    ['calibre_url', 'setCalibreUrl'],
   ];
   for (const [key, id] of fields) {
     const val = $(`#${id}`).value;
@@ -504,6 +580,18 @@ function init() {
   // Nav
   $$('#navLinks button').forEach(btn => {
     btn.addEventListener('click', () => showPage(btn.dataset.page));
+  });
+
+  // Search type toggle
+  $$('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.searchType = btn.dataset.type;
+      $('#searchInput').placeholder = state.searchType === 'ebook'
+        ? 'Search ebooks on torrent trackers...'
+        : 'Search audiobooks on torrent trackers...';
+    });
   });
 
   // Search
