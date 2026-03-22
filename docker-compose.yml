@@ -1,58 +1,87 @@
-version: "3.8"
-
 services:
   book-seeker:
     build: .
     container_name: book-seeker
+    restart: unless-stopped
     ports:
-      - "8091:8091"
+      - "${PORT:-8091}:8091"
     volumes:
       - ./data:/app/data
-      - audiobooks:/audiobooks
-      - ebooks:/ebooks
+      - ${AUDIOBOOK_DIR:-./audiobooks}:/audiobooks
+      - ${EBOOK_DIR:-./ebooks}:/ebooks
     environment:
       - PROWLARR_URL=http://prowlarr:9696
       - PROWLARR_API_KEY=${PROWLARR_API_KEY}
       - QBIT_URL=http://qbittorrent:8081
+      - QBIT_SAVE_PATH=${QBIT_SAVE_PATH:-/data/audiobooks}
+      - QBIT_EBOOK_SAVE_PATH=${QBIT_EBOOK_SAVE_PATH:-/data/ebooks}
       - ABS_URL=http://audiobookshelf:80
       - ABS_USER=${ABS_USER:-admin}
-      - ABS_PASS=${ABS_PASS:-admin}
+      - ABS_PASS=${ABS_PASS}
       - CALIBRE_URL=http://calibre-web:8083
+      - CALIBRE_USER=${CALIBRE_USER:-admin}
+      - CALIBRE_PASS=${CALIBRE_PASS}
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASS=${ADMIN_PASS}
       - EBOOK_DIR=/ebooks
-    networks:
-      - default
+    depends_on:
+      - audiobookshelf
+      - calibre-web
+      - prowlarr
+      - qbittorrent
 
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
-    ports:
-      - "13378:80"
+    restart: unless-stopped
+    environment:
+      - AUDIOBOOKSHELF_UID=1000
+      - AUDIOBOOKSHELF_GID=1000
     volumes:
-      - audiobooks:/audiobooks
+      - ${AUDIOBOOK_DIR:-./audiobooks}:/audiobooks
       - abs-config:/config
       - abs-metadata:/metadata
-    networks:
-      - default
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:latest
     container_name: calibre-web
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/Prague
+      - TZ=${TZ:-UTC}
     volumes:
       - calibre-config:/config
-      - ebooks:/books
-    ports:
-      - "8083:8083"
+      - ${EBOOK_DIR:-./ebooks}:/books
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
     restart: unless-stopped
-    networks:
-      - default
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+    volumes:
+      - prowlarr-config:/config
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+      - WEBUI_PORT=8081
+    volumes:
+      - qbit-config:/config
+      - ${AUDIOBOOK_DIR:-./audiobooks}:/data/audiobooks
+      - ${EBOOK_DIR:-./ebooks}:/data/ebooks
 
 volumes:
-  audiobooks:
-  ebooks:
   abs-config:
   abs-metadata:
   calibre-config:
+  prowlarr-config:
+  qbit-config:

@@ -15,3 +15,5 @@ EBOOK_DIR = os.environ.get("EBOOK_DIR", "/ebooks")
 QBIT_SAVE_PATH = os.environ.get("QBIT_SAVE_PATH", "")  # Path from qBittorrent's perspective
 QBIT_EBOOK_SAVE_PATH = os.environ.get("QBIT_EBOOK_SAVE_PATH", "")  # qBit perspective for ebooks
 CALIBRE_URL = os.environ.get("CALIBRE_URL", "http://calibre-web:8083")
+CALIBRE_USER = os.environ.get("CALIBRE_USER", "admin")
+CALIBRE_PASS = os.environ.get("CALIBRE_PASS", "")

@@ -269,8 +269,12 @@ function renderLibraryItems(items, container) {
 // ── Iframe loader (Player / Reader) ──
 function loadIframe(id, src) {
   const frame = $(`#${id}`);
-  if (frame && frame.src !== location.origin + src) {
-    frame.src = src;
+  if (!frame) return;
+  // Cache-bust ABS iframe so the auto-login script always runs
+  const bust = src.includes('audiobookshelf') ? `?_t=${Date.now()}` : '';
+  const full = src + bust;
+  if (!frame.src || !frame.src.includes(src.split('?')[0])) {
+    frame.src = full;
   }
 }
 
@@ -367,6 +371,9 @@ async function loadServiceConfig() {
     $('#setAudiobookDir').value = s.audiobook_dir || '';
     $('#setEbookDir').value = s.ebook_dir || '';
     $('#setCalibreUrl').value = s.calibre_url || '';
+    $('#setCalibreUser').value = s.calibre_user || '';
+    $('#setCalibrePass').value = s.calibre_pass === true ? '' : (s.calibre_pass || '');
+    $('#setCalibrePass').placeholder = s.calibre_pass === true ? '(configured)' : 'Password';
   } catch {}
 }
 
@@ -386,6 +393,8 @@ async function saveSettings() {
     ['audiobook_dir', 'setAudiobookDir'],
     ['ebook_dir', 'setEbookDir'],
     ['calibre_url', 'setCalibreUrl'],
+    ['calibre_user', 'setCalibreUser'],
+    ['calibre_pass', 'setCalibrePass'],
   ];
   for (const [key, id] of fields) {
     const val = $(`#${id}`).value;
