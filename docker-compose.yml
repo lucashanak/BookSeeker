@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  audiobook-seeker:
+    build: .
+    container_name: audiobook-seeker
+    ports:
+      - "8091:8091"
+    volumes:
+      - ./data:/app/data
+      - audiobooks:/audiobooks
+    environment:
+      - PROWLARR_URL=http://prowlarr:9696
+      - PROWLARR_API_KEY=${PROWLARR_API_KEY}
+      - QBIT_URL=http://qbittorrent:8081
+      - ABS_URL=http://audiobookshelf:80
+      - ABS_USER=${ABS_USER:-admin}
+      - ABS_PASS=${ABS_PASS:-admin}
+    networks:
+      - default
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    ports:
+      - "13378:80"
+    volumes:
+      - audiobooks:/audiobooks
+      - abs-config:/config
+      - abs-metadata:/metadata
+    networks:
+      - default
+
+volumes:
+  audiobooks:
+  abs-config:
+  abs-metadata:

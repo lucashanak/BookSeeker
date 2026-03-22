@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AudiobookSeeker</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+
+<nav>
+  <div class="logo">AudiobookSeeker</div>
+  <div class="nav-links" id="navLinks" style="display:none">
+    <button data-page="search" class="active">Search</button>
+    <button data-page="library">Library</button>
+    <button data-page="downloads">Downloads</button>
+  </div>
+</nav>
+
+<main>
+  <!-- Login -->
+  <div class="page active" id="pageLogin">
+    <div class="login-wrap">
+      <div class="login-box">
+        <h2>AudiobookSeeker</h2>
+        <input type="text" id="loginUser" placeholder="Username" autocomplete="username">
+        <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+        <button id="loginBtn">Login</button>
+        <div class="login-error" id="loginError"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="page" id="pageSearch">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search audiobooks on torrent trackers...">
+      <button id="searchBtn">Search</button>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+
+  <!-- Library -->
+  <div class="page" id="pageLibrary">
+    <h1 class="page-title">Library</h1>
+    <div class="search-bar" style="margin-bottom:16px">
+      <input type="text" id="libSearchInput" placeholder="Search your library...">
+      <button id="libSearchBtn">Search</button>
+    </div>
+    <div id="libraryContent"></div>
+  </div>
+
+  <!-- Downloads -->
+  <div class="page" id="pageDownloads">
+    <h1 class="page-title">Downloads</h1>
+    <div id="downloadsContent"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
